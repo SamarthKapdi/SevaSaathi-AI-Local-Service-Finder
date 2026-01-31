@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: seva-saathi-platform-test
+  
+  # Test Database Configuration (H2 in-memory)
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # JPA Configuration for Tests
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+  
+  # Redis Configuration for Tests (embedded)
+  data:
+    redis:
+      host: localhost
+      port: 6370
+  
+  # Security Configuration for Tests
+  security:
+    jwt:
+      secret: test-jwt-secret-key-for-testing-only
+      expiration: 3600000 # 1 hour for tests
+      refresh-expiration: 7200000 # 2 hours for tests
+
+# Server Configuration for Tests
+server:
+  port: 0 # Random available port
+
+# Logging Configuration for Tests
+logging:
+  level:
+    com.sevasaathi: WARN
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.testcontainers: WARN
+
+# Application Specific Configuration for Tests
+app:
+  # Mock configurations for external services
+  sms:
+    provider: mock
+  
+  email:
+    provider: mock
+  
+  maps:
+    provider: mock
+  
+  ai:
+    openai:
+      api-key: mock-api-key
+      model: mock-model
+  
+  payment:
+    razorpay:
+      key-id: mock-key-id
+      key-secret: mock-key-secret
+  
+  business:
+    default-search-radius-km: 5.0
+    max-search-radius-km: 25.0
+    booking-advance-days: 14
+    rating-scale-max: 5

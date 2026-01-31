@@ -1,0 +1,234 @@
+spring:
+  application:
+    name: seva-saathi-platform
+  
+  profiles:
+    active: dev
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/sevasaathi_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME:sevasaathi_user}
+    password: ${DB_PASSWORD:sevasaathi_pass}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+  
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+    
+    # Elasticsearch Configuration
+    elasticsearch:
+      uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+      username: ${ELASTICSEARCH_USERNAME:}
+      password: ${ELASTICSEARCH_PASSWORD:}
+      connection-timeout: 5s
+      socket-timeout: 30s
+  
+  # Security Configuration
+  security:
+    jwt:
+      secret: ${JWT_SECRET:seva-saathi-jwt-secret-key-for-development-only-change-in-production}
+      expiration: 86400000 # 24 hours in milliseconds
+      refresh-expiration: 604800000 # 7 days in milliseconds
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # WebSocket Configuration
+  websocket:
+    allowed-origins: ${WEBSOCKET_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api/v1
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+  http2:
+    enabled: true
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    com.sevasaathi: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:WARN}
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_PARAM_LOG_LEVEL:WARN}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/seva-saathi.log
+
+# Application Specific Configuration
+app:
+  # SMS Configuration
+  sms:
+    provider: ${SMS_PROVIDER:twilio}
+    api-key: ${SMS_API_KEY:}
+    api-secret: ${SMS_API_SECRET:}
+    from-number: ${SMS_FROM_NUMBER:}
+  
+  # Email Configuration
+  email:
+    provider: ${EMAIL_PROVIDER:smtp}
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USERNAME:}
+    password: ${EMAIL_PASSWORD:}
+    from: ${EMAIL_FROM:noreply@sevasaathi.com}
+  
+  # Maps API Configuration
+  maps:
+    provider: ${MAPS_PROVIDER:google}
+    api-key: ${MAPS_API_KEY:}
+  
+  # AI Services Configuration
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      model: ${OPENAI_MODEL:gpt-3.5-turbo}
+      max-tokens: ${OPENAI_MAX_TOKENS:150}
+    
+    translate:
+      provider: ${TRANSLATE_PROVIDER:google}
+      api-key: ${TRANSLATE_API_KEY:}
+  
+  # Payment Gateway Configuration
+  payment:
+    razorpay:
+      key-id: ${RAZORPAY_KEY_ID:}
+      key-secret: ${RAZORPAY_KEY_SECRET:}
+    
+    upi:
+      enabled: ${UPI_ENABLED:true}
+      merchant-id: ${UPI_MERCHANT_ID:}
+  
+  # Business Configuration
+  business:
+    default-search-radius-km: ${DEFAULT_SEARCH_RADIUS:10.0}
+    max-search-radius-km: ${MAX_SEARCH_RADIUS:50.0}
+    booking-advance-days: ${BOOKING_ADVANCE_DAYS:30}
+    rating-scale-max: ${RATING_SCALE_MAX:5}
+    
+  # Cache Configuration
+  cache:
+    ttl:
+      user-profile: 3600 # 1 hour
+      provider-profile: 1800 # 30 minutes
+      search-results: 300 # 5 minutes
+      recommendations: 600 # 10 minutes
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    com.sevasaathi: DEBUG
+    org.springframework.security: DEBUG
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  data:
+    redis:
+      host: localhost
+      port: 6370 # Different port for test
+    elasticsearch:
+      uris: http://localhost:9201 # Different port for test
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    com.sevasaathi: INFO
+    org.springframework.security: WARN
